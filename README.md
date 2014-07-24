@@ -147,9 +147,10 @@ git clone https://github.com/szymonrychu/ObjectTrackerV2.git ~/android-sdk/git/O
 
 2. Import the project ot Eclipse:
 run ~/android-sdk/launcher.sh, then go to the:
- File -> Import -> Existing Projects into Workspace and browse to ~/android-sdk/git/Obj
-ectTrackerV2/
+ File -> Import -> Existing Projects into Workspace
 
+and browse to ~/android-sdk/git/ObjectTrackerV2/
+also import everything from ~/android-sdk/OpenCV-2.4.9-android/
 
 
  
