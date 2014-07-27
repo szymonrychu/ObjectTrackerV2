@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="10"
+        android:minSdkVersion="11"
         android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -46,12 +46,6 @@
             android:label="@string/title_activity_recognize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
-            <intent-filter >
-				<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-            </intent-filter>
-            <meta-data
-      			android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" 
-      			android:resource="@xml/device_filter" />
         </activity>
         <activity
             android:name=".calibrator.CalibrateActivity"
@@ -81,6 +75,22 @@
         </activity>
         <activity
             android:name="simple.as.fuck.objecttrackerv2.driver.DriverActivity"
+            android:label="@string/title_activity_driver"
+            android:parentActivityName=".MainActivity" >
+            <intent-filter >
+				<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+      			android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" 
+      			android:resource="@xml/device_filter" />
+        </activity>
+        <activity
+            android:name="com.hoho.android.usbserial.examples.SerialConsoleActivity"
+            android:label="@string/title_activity_driver"
+            android:parentActivityName=".MainActivity" >
+        </activity>
+        <activity
+            android:name="com.hoho.android.usbserial.examples.DeviceListActivity"
             android:label="@string/title_activity_driver"
             android:parentActivityName=".MainActivity" >
         </activity>

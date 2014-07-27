@@ -9,6 +9,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.os.Handler;
 import android.util.Log;
 
 public class DriverHelper implements Runnable{
@@ -17,15 +18,15 @@ public class DriverHelper implements Runnable{
 	private volatile UsbEndpoint outEndpoint;
     private UsbDeviceConnection usbConnection;
     private UsbDevice usbDevice;
-    private Boolean transreceive = false;
+    public Boolean transreceive = false;
     private Thread worker;
     private OnDataTransreceiveListener listener;
     private int timeoutMs = 100;
     private int bufferSize = 3;
     public interface OnDataTransreceiveListener{
     	void listen(byte[] inData);
-    	void send(byte[] outData);
     }
+    
     DriverHelper(UsbManager usbManager){
     	transreceive = findDevice(usbManager);
     	worker = new Thread(this);
@@ -35,7 +36,7 @@ public class DriverHelper implements Runnable{
     public void setOnDataTransreceiveListener(OnDataTransreceiveListener l){
     	this.listener = l;
     }
-	public Boolean findDevice(UsbManager usbManager) {
+	private Boolean findDevice(UsbManager usbManager) {
         HashMap<String, UsbDevice> usbDeviceList = usbManager.getDeviceList();
         Iterator<UsbDevice> deviceIterator = usbDeviceList.values().iterator();
         usbDevice = null;
@@ -68,7 +69,12 @@ public class DriverHelper implements Runnable{
             	return false;
             }
 
-            usbConnection.controlTransfer(0x21, 34, 0, 0, getLineEncoding(19200), 7, 1000);
+            //usbConnection.controlTransfer(0x21, 34, 0, 0, getLineEncoding(19200), 7, 1000);
+
+            usbConnection.controlTransfer(0x21, 34, 0, 0, null, 0, 0);
+            usbConnection.controlTransfer(0x21, 32, 0, 0, new byte[] { (byte) 0x80,
+                    0x25, 0x00, 0x00, 0x00, 0x00, 0x08 }, 7, 0);
+            usbConnection.controlTransfer(0x40, 0x03, 0x4138, 0, null, 0, 0); //Baudrate 9600
             
             for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
                 if (usbInterface.getEndpoint(i).getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
@@ -114,13 +120,7 @@ public class DriverHelper implements Runnable{
 	public void run() {
 		while(transreceive){
 			byte[] outBuffer = null;
-			if(listener != null){
-				listener.send(outBuffer);
-			}
-			if(outBuffer!=null){
-				send(outBuffer);
-				outBuffer = null;
-			}else{
+			if(!sending){
 				byte[] inBuffer = new byte[bufferSize];
 				receive(inBuffer);
 				if(listener != null){
@@ -129,12 +129,28 @@ public class DriverHelper implements Runnable{
 			}
 		}
 	}
-	void send(byte[] buffer){
-		if(usbConnection!=null && outEndpoint != null && buffer != null){
-			usbConnection.bulkTransfer(outEndpoint, buffer, buffer.length, timeoutMs);
+	private Boolean sending = false;
+	public void send(final byte[] buffer){
+		if(usbConnection!=null && outEndpoint != null && buffer != null && !sending){
+			Thread th = new Thread(){
+				@Override
+				public void run() {
+					sending = true;
+					usbConnection.bulkTransfer(outEndpoint, buffer, buffer.length, timeoutMs);
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sending=false;
+					super.run();
+				}
+			};
+			th.start();
 		}
 	}
-	void receive(byte[] buffer){
+	protected void receive(byte[] buffer){
 		if(usbConnection!=null && inEndpoint != null){
 			usbConnection.bulkTransfer(inEndpoint, buffer, buffer.length, timeoutMs);
 		}
@@ -166,4 +182,5 @@ public class DriverHelper implements Runnable{
 	public void setBufferSize(int bufferSize) {
 		this.bufferSize = bufferSize;
 	}
+	
 }

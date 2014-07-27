@@ -1,5 +1,7 @@
 package simple.as.fuck.objecttrackerv2.driver;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,12 +14,15 @@ import simple.as.fuck.objecttrackerv2.elements.FullScreenActivity;
 import simple.as.fuck.objecttrackerv2.elements.OnMultitouch;
 import simple.as.fuck.objecttrackerv2.elements.Pointer;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,8 +34,8 @@ import android.view.View;
 import android.view.View.OnGenericMotionListener;
 import android.view.View.OnTouchListener;
 
-public class DriverActivity extends FullScreenActivity implements Callback, Runnable{
-
+public class DriverActivity extends FullScreenActivity implements Callback, Runnable, DriverHelper.OnDataTransreceiveListener, ControlsHelper.ControlsCallback {
+	private String TAG = DriverActivity.class.getSimpleName();
 	private SurfaceView driverView;
 	private SurfaceHolder holder;
 	private Boolean draw = false;
@@ -39,6 +44,7 @@ public class DriverActivity extends FullScreenActivity implements Callback, Runn
 	private int refreshMs;
 	private Paint paint;
 	private ControlsHelper controlsHelper;
+	private DriverHelper driverHelper;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -51,7 +57,13 @@ public class DriverActivity extends FullScreenActivity implements Callback, Runn
 		paint = new Paint();
 		paint.setAntiAlias(true);
 		paint.setStrokeWidth(100.0f);
+		paint.setTextSize(25);
+		paint.setColor(Color.RED);
 		controlsHelper = new ControlsHelper(driverView);
+		controlsHelper.setControlsCallback(this);
+		
+		driverHelper = new DriverHelper((UsbManager) getSystemService(Context.USB_SERVICE));
+		driverHelper.setOnDataTransreceiveListener(this);
 	}
 	void drawControls(Canvas canvas){
 		
@@ -110,6 +122,10 @@ public class DriverActivity extends FullScreenActivity implements Callback, Runn
 
 	public void redraw(Canvas canvas){
 		controlsHelper.drawControls(canvas);
+		canvas.drawText("X="+X, 50, 50, paint);
+		canvas.drawText("Y="+Y, 50, 100, paint);
+		canvas.drawText("Connected="+driverHelper.transreceive, 50, 150, paint);
+		canvas.drawText("sent="+sent, 50, 200, paint);
 		/*
 		SparseArray<Pointer> pointers = listener.getPoints();
 		for(int c=0;c<pointers.size();c++){
@@ -145,6 +161,49 @@ public class DriverActivity extends FullScreenActivity implements Callback, Runn
 
 	@Override
 	protected void onSystemBarsHided() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void listen(byte[] inData) {
+		
+		for(byte d : inData){
+			if(d!=0){
+				Log.d(TAG, "inData"+(char)d);
+			}
+		}
+		// TODO Auto-generated method stub
+		
+	}
+	float X=0;
+	float Y=0;
+	String sent="";
+	int steerMax = 240;
+	int steerMin = 115;
+	
+	@Override
+	public void getPivotPosition(float procX, float procY) {
+		X = procX;
+		Y = procY;
+		int steer, lFront, lBack, rFront, rBack;
+		int steerCenter = (steerMax - steerMin)/2 + steerMin;
+		steer = steerCenter - (int)(procX*((steerMax - steerMin)/2));
+
+		lBack = procY > 0 ? procX > 0 ? (int)(procY*255) : Math.max((int)(procY*255)+(int)(procX*50),0) : 0;//leftT
+		lFront = procY < 0 ? procX > 0 ? -(int)(procY*255) : Math.max(-(int)(procY*255)+(int)(procX*50),0) : 0;//leftP
+		rBack = procY > 0 ? procX < 0 ? (int)(procY*255) : Math.max((int)(procY*255)-(int)(procX*50),0) : 0;//rightT
+		rFront = procY < 0 ? procX < 0 ? -(int)(procY*255) : Math.max(-(int)(procY*255)-(int)(procX*50),0) : 0;//rightP
+		/*
+		lBack = procY < 0 ? -(int)(procY*255) : 0;
+		rFront = procY > 0 ? (int)(procY*255) : 0;
+		rBack = procY < 0 ? -(int)(procY*255) : 0;*/
+		
+		
+		
+		sent = ""+steer+","+lFront+","+lBack+","+rFront+","+rBack+",";
+		driverHelper.send(sent.getBytes());
+		
+		
 		// TODO Auto-generated method stub
 		
 	}

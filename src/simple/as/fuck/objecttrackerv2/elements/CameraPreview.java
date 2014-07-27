@@ -7,10 +7,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import simple.as.fuck.objecttrackerv2.OpenGLElements.GLRenderer;
-import simple.as.fuck.objecttrackerv2.OpenGLElements.GLTextureView;
-import simple.as.fuck.objecttrackerv2.OpenGLElements.GLRenderer.ColorShader;
-import simple.as.fuck.objecttrackerv2.OpenGLElements.GLRenderer.TextureShader;
 import simple.as.fuck.objecttrackerv2.driver.DriverActivity;
 import simple.as.fuck.objecttrackerv2.natUtils.Misc;
 import android.app.Activity;
@@ -21,7 +17,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
-import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
@@ -32,7 +27,6 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
-import android.view.TextureView;
 import android.view.View.OnTouchListener;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -40,26 +34,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-
-
-
-public class CameraOpenGLPreview extends ViewGroup {
-	private final static String TAG = CameraOpenGLPreview.class.getSimpleName();
+public abstract class CameraPreview extends ViewGroup {
+	private final static String TAG = CameraPreview.class.getSimpleName();
 	private Context context = null;
 	private Camera camera = null;
 	private int maxThreads = 1;
 	private double scaleX, scaleY;
 	private int height, width, rotation;
 	private CameraView cameraView;
-	private GLTextureView glTextureView;
-	private GLRenderer renderer;
 	private CameraSetupCallback cameraSetupCallback = null;
 	private Mat yuvFrame;
 	private Canvas canvas;
 	private Boolean rotate=false;
 	private Boolean recreateMatFrame=false;
 	private CameraProcessingCallback cameraProcessingCallback= null;
-	private OnMultitouch listener;
 	public static int ROTATION_PORTRAIT=0;
 	public static int ROTATION_LANDSCAPE=1;
 	public static int ROTATION_PORT_UPS_DOWN=3;
@@ -98,18 +86,6 @@ public class CameraOpenGLPreview extends ViewGroup {
 		 * @param rotation -parameter with information about rotation. In degrees.
 		 */
 		public void processImage(Mat yuvFrame, Thread thiz);
-		/**
-		 * Method designed to refresh upper layer of preview with canvas.
-		 * @param canvas -canvas in which results of processing can be rendered.
-		 * @param scaleX -scale of x axis 
-		 * @param scaleY -scale of y axis
-		 */
-		public void drawOnCamera(Canvas canvas, double scaleX, double scaleY);
-		/**
-		 * Method designed to retrieve points, where it was touched.
-		 * @param pointers
-		 */
-		public void getPointers(SparseArray<Pointer> pointers);
 	}
 	/**
 	 * Method to setup the cameraSetupCallback
@@ -161,47 +137,11 @@ public class CameraOpenGLPreview extends ViewGroup {
 	public Camera.Parameters getCameraParameters(){
 		return cameraView.getCameraParameters();
 	}
-	/**
-	 * Method getting actual preview's screenshot.
-	 * @return bitmap containing preview with overlayed data.
-	 */
-	public Bitmap getScreenShot(){
-		Bitmap bmp = Misc.mat2Bitmap(Misc.yuv2Rgb(yuvFrame, rotation));
-		if(cameraProcessingCallback != null){
-			Canvas canvas = new Canvas(bmp);
-			cameraProcessingCallback.drawOnCamera(canvas, scaleX, scaleY);
-		}
-		return bmp;
-	}
-	/**
-	 * Method is requesting refresh of surface child view, responsible for presenting drawings. 
-	 */
-	public void requestRefresh(){
-		//drawerView.refresh();
-	}
 	//##########################################################3
 	private void init(Context context){
 		this.context = context;
 		this.cameraView = new CameraView(this);
-		this.glTextureView = new GLTextureView(context);
-		renderer = new GLRenderer(context) {
-			
-			@Override
-			public void initObjects() {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void drawObjects(TextureShader texProgram, ColorShader colProgram) {
-				// TODO Auto-generated method stub
-				
-			}
-		};
-		this.glTextureView.setRenderer(renderer);
-		this.listener = new OnMultitouch(glTextureView);
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT );
-		addView(glTextureView,params);
 		addView(cameraView,params);
 	}
 	@Override
@@ -214,15 +154,15 @@ public class CameraOpenGLPreview extends ViewGroup {
 		}
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
-	public CameraOpenGLPreview(Context context, AttributeSet attrs, int defStyle) {
+	public CameraPreview(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init(context);
 	}
-	public CameraOpenGLPreview(Context context, AttributeSet attrs) {
+	public CameraPreview(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init(context);
 	}
-	public CameraOpenGLPreview(Context context) {
+	public CameraPreview(Context context) {
 		super(context);
 		init(context);
 	}
@@ -238,7 +178,7 @@ public class CameraOpenGLPreview extends ViewGroup {
 		private SurfaceHolder surfaceHolder;
 		private Boolean previewRunning = false;
 		private Boolean initial = true;
-		public CameraView(CameraOpenGLPreview parent){
+		public CameraView(CameraPreview parent){
 			super(context);
 			this.surfaceHolder = getHolder();
 			this.surfaceHolder.addCallback(this);
@@ -263,7 +203,6 @@ public class CameraOpenGLPreview extends ViewGroup {
 						public void run(){
 							if(previewRunning){
 								cameraProcessingCallback.processImage(yuvFrame, this);
-								cameraProcessingCallback.getPointers(listener.getPoints());
 							}
 							threads--;
 						}
@@ -369,41 +308,5 @@ public class CameraOpenGLPreview extends ViewGroup {
 			}
 		}
 	}
-	private class DrawerView extends SurfaceView implements Callback{
-		private SurfaceHolder surfaceHolder;
-		private Boolean draw = false;
-		public DrawerView(CameraOpenGLPreview parent){
-			super(context);
-			this.surfaceHolder = getHolder();
-			this.surfaceHolder.addCallback(this);
-			this.surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
-		}
-		@Override
-		public void surfaceCreated(SurfaceHolder holder){}
-		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format, int width,
-				int height) {
-			draw = true;
-		}
-		@Override
-		public void surfaceDestroyed(SurfaceHolder holder) {
-			draw = false;
-		}
-		public synchronized void refresh(){
-			if(draw){
-				canvas=surfaceHolder.lockCanvas();
-				if(canvas!=null)
-						synchronized(canvas){
-						canvas.drawColor(0, Mode.CLEAR);
-						if(cameraProcessingCallback != null){
-							cameraProcessingCallback.drawOnCamera(canvas,scaleX,scaleY);
-						}
-						surfaceHolder.unlockCanvasAndPost(canvas);
-				}
-			}
-		}
-		
-	}
-	
 	
 }

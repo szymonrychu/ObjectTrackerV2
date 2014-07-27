@@ -21,6 +21,7 @@ public class MainActivity extends ActionBarActivity {
 	private Button recognizeButton = null;
 	private Button generateButton = null;
 	private Button driverButton = null;
+	private Button exampleButton = null;
 	private Context context;
 	public MainActivity() {
 		this.context = this;
