@@ -62,7 +62,7 @@ public class DriverActivity extends FullScreenActivity implements Callback, Runn
 		controlsHelper = new ControlsHelper(driverView);
 		controlsHelper.setControlsCallback(this);
 		
-		driverHelper = new DriverHelper((UsbManager) getSystemService(Context.USB_SERVICE));
+		driverHelper = new DriverHelper(this, (UsbManager) getSystemService(Context.USB_SERVICE));
 		driverHelper.setOnDataTransreceiveListener(this);
 	}
 	void drawControls(Canvas canvas){

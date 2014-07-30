@@ -3,6 +3,10 @@ package simple.as.fuck.objecttrackerv2.driver;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -12,7 +16,7 @@ import android.hardware.usb.UsbManager;
 import android.os.Handler;
 import android.util.Log;
 
-public class DriverHelper implements Runnable{
+public class DriverHelper extends BroadcastReceiver implements Runnable{
 	private static final String TAG = DriverHelper.class.getSimpleName();
 	private volatile UsbEndpoint inEndpoint;
 	private volatile UsbEndpoint outEndpoint;
@@ -23,15 +27,35 @@ public class DriverHelper implements Runnable{
     private OnDataTransreceiveListener listener;
     private int timeoutMs = 100;
     private int bufferSize = 3;
+    private UsbManager usbManager;
+    private Context context;
     public interface OnDataTransreceiveListener{
     	void listen(byte[] inData);
     }
-    
-    DriverHelper(UsbManager usbManager){
+    DriverHelper(Context context, UsbManager usbManager){
+    	IntentFilter filter = new IntentFilter();
+    	filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+    	context.registerReceiver(this, filter);
     	transreceive = findDevice(usbManager);
-    	worker = new Thread(this);
-    	worker.start();
     	listener = null;
+    }
+    @Override
+	public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) { 
+        	transreceive = false;
+        	try {
+				worker.join();
+			} catch (InterruptedException e) {
+			}
+        }else if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)){
+        	if(!transreceive){
+            	transreceive = findDevice(usbManager);
+            	worker = new Thread(this);
+            	worker.start();
+        	}
+        }
+        
     }
     public void setOnDataTransreceiveListener(OnDataTransreceiveListener l){
     	this.listener = l;
@@ -182,5 +206,6 @@ public class DriverHelper implements Runnable{
 	public void setBufferSize(int bufferSize) {
 		this.bufferSize = bufferSize;
 	}
+	
 	
 }
