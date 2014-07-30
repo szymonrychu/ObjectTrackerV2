@@ -34,13 +34,13 @@ import android.view.View;
 import android.view.View.OnGenericMotionListener;
 import android.view.View.OnTouchListener;
 
-public class DriverActivity extends FullScreenActivity implements Callback, Runnable, DriverHelper.OnDataTransreceiveListener, ControlsHelper.ControlsCallback {
+public class DriverActivity extends FullScreenActivity implements Callback, Runnable, ControlsHelper.ControlsCallback {
 	private String TAG = DriverActivity.class.getSimpleName();
 	private SurfaceView driverView;
 	private SurfaceHolder holder;
 	private Boolean draw = false;
 	private Thread refreshThread;
-	private int time;
+	private int time;;
 	private int refreshMs;
 	private Paint paint;
 	private ControlsHelper controlsHelper;
@@ -63,7 +63,6 @@ public class DriverActivity extends FullScreenActivity implements Callback, Runn
 		controlsHelper.setControlsCallback(this);
 		
 		driverHelper = new DriverHelper(this, (UsbManager) getSystemService(Context.USB_SERVICE));
-		driverHelper.setOnDataTransreceiveListener(this);
 	}
 	void drawControls(Canvas canvas){
 		
@@ -161,17 +160,6 @@ public class DriverActivity extends FullScreenActivity implements Callback, Runn
 
 	@Override
 	protected void onSystemBarsHided() {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void listen(byte[] inData) {
-		
-		for(byte d : inData){
-			if(d!=0){
-				Log.d(TAG, "inData"+(char)d);
-			}
-		}
 		// TODO Auto-generated method stub
 		
 	}

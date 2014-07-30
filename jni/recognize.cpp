@@ -145,10 +145,11 @@ public:
 		this->blockSize = 45;
 		this->adaptThresh = 5.0;
 		this->maxTagSize = 0.95;
-		this->minTagSize = 0.3;
+		this->minTagSize = 0.01;
 		this->normSize = 50;
 		this->tagSize = 5;
 		this->preview = true;
+		this->rotation = 0;
 
 
 
@@ -229,7 +230,7 @@ public:
     				vector<int>::iterator it;
     				if(id!=-1){
         				Geometry::Tag tag;
-						tag.setPoints(refinedVertices,rotation,Size(mGray.cols,mGray.rows));
+						tag.setPoints(refinedVertices,rotation,Size(mGray.cols,mGray.rows), len);
 						tag.preview = normROI;
 						tag.id = id;
 						result.push_back(tag);

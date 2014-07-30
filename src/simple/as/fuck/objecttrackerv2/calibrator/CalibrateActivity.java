@@ -39,6 +39,7 @@ public class CalibrateActivity  extends FullScreenActivity implements CameraSetu
 	private Button addToSetButton;
 	private Button processDataButton;
 	private OfflineDataHelper helper;
+	private int viewWidth, viewHeight;
 	Bitmap bmp;
 	private int rotation;
 	@Override
@@ -108,13 +109,15 @@ public class CalibrateActivity  extends FullScreenActivity implements CameraSetu
 	public void drawOnCamera(Canvas canvas, double scaleX, double scaleY) {
 		if(points != null)
 			for(Point point : points){
-				canvas.drawPoint(point.x, point.y, paint);
+				canvas.drawPoint(point.x*viewWidth, point.y*viewHeight, paint);
 		}
 		//canvas.drawBitmap(bmp, 100, 100, paint);
 	}
 
 	@Override
 	public void setCameraParameters(Parameters params, int width, int height, int rotation) {
+		viewHeight = height;
+		viewWidth = width;
 		this.rotation = rotation;
 		Camera.Size bestFit = params.getPreviewSize();
 		float ratio=1;
@@ -132,6 +135,8 @@ public class CalibrateActivity  extends FullScreenActivity implements CameraSetu
 
 	@Override
 	public void setCameraInitialParameters(Parameters params, int width, int height, int rotation) {
+		viewHeight = height;
+		viewWidth = width;
 		this.rotation = rotation;
 		Log.d(TAG,"camera dimensions: w:"+width+":h:"+height);
 		Camera.Size bestFit = params.getPreviewSize();

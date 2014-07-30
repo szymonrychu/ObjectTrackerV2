@@ -21,25 +21,25 @@ public:
 		int x;
 		int y;
 		jobject toJava(JNIEnv* env, int rotation, Size matSize){
-			jfieldID xID = env->GetFieldID(jPointCls,"x","I");
-			jfieldID yID = env->GetFieldID(jPointCls,"y","I");
+			jfieldID xID = env->GetFieldID(jPointCls,"x","F");
+			jfieldID yID = env->GetFieldID(jPointCls,"y","F");
 			jobject result = env->NewObject(jPointCls,jPointConsID);
 			switch(rotation){
 			case(ROTATION_LANDSCAPE):
-				env->SetIntField(result,xID,x);
-				env->SetIntField(result,yID,y);
+				env->SetFloatField(result,xID,((float)x/matSize.width));
+				env->SetFloatField(result,yID,((float)y/matSize.height));
 			break;
 			case(ROTATION_PORTRAIT):
-				env->SetIntField(result,xID,matSize.height - y);
-				env->SetIntField(result,yID,x);
+				env->SetFloatField(result,xID,((float)(matSize.height - y)/matSize.width));
+				env->SetFloatField(result,yID,((float)x/matSize.height));
 			break;
 			case(ROTATION_LANDS_UPSIDE_DOWN):
-				env->SetIntField(result,xID,matSize.width - x);
-				env->SetIntField(result,yID,matSize.height - y);
+				env->SetFloatField(result,xID,((float)(matSize.width - x)/matSize.width));
+				env->SetFloatField(result,yID,((float)(matSize.height - y)/matSize.height));
 			break;
 			case(ROTATION_PORTR_UPSIDE_DOWN):
-				env->SetIntField(result,xID,y);
-				env->SetIntField(result,yID,matSize.width - x);
+				env->SetFloatField(result,xID,((float)y/matSize.height));
+				env->SetFloatField(result,yID,((float)(matSize.width - x)/matSize.width));
 			break;
 			}
 			return result;
@@ -51,17 +51,20 @@ public:
 		Mat preview;
 		Mat homo;
 		vector<Geometry::Point> points;
-		void setPoints(vector<Point2f> points,int rotation, Size matSize){
+		double l;
+		void setPoints(vector<Point2f> points,int rotation, Size matSize, double l){
 			vector<Point2f>::iterator it;
 			for(it=points.begin();it!=points.end();it++){
 				Geometry::Point point;
 				point.x = it->x;
 				point.y = it->y;
 				this->points.push_back(point);
+				this->l = l;
 			}
 		}
 		jobject toJava(JNIEnv*env, int rotation, Size matSize){
 			jfieldID idID = env->GetFieldID(jTagCls,"id","I");
+			jfieldID lenID = env->GetFieldID(jTagCls,"len","D");
 			jfieldID homoID = env->GetFieldID(jTagCls,"homo","Lorg/opencv/core/Mat;");
 			jfieldID previewID = env->GetFieldID(jTagCls,"preview","Lorg/opencv/core/Mat;");
 			jfieldID pointsID = env->GetFieldID(jTagCls,"points","[Lsimple/as/fuck/objecttrackerv2/geomerty/Point;");
@@ -69,6 +72,7 @@ public:
 			jobject result = env->NewObject(jTagCls,jTagConsID);
 
 			env->SetIntField(result,idID,this->id);
+			env->SetDoubleField(result,lenID,this->l);
 			env->SetObjectField(result,homoID,mat2JMat(env,this->homo));
 			env->SetObjectField(result,previewID,mat2JMat(env,this->preview));
 			jobjectArray pointsJArray = env->NewObjectArray(this->points.size(),jPointCls,points.at(0).toJava(env,rotation,matSize));

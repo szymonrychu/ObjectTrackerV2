@@ -24,21 +24,19 @@ public class DriverHelper extends BroadcastReceiver implements Runnable{
     private UsbDevice usbDevice;
     public Boolean transreceive = false;
     private Thread worker;
-    private OnDataTransreceiveListener listener;
     private int timeoutMs = 100;
     private int bufferSize = 3;
     private UsbManager usbManager;
     private Context context;
-    public interface OnDataTransreceiveListener{
-    	void listen(byte[] inData);
-    }
-    DriverHelper(Context context, UsbManager usbManager){
+    public DriverHelper(Context context, UsbManager usbManager){
     	IntentFilter filter = new IntentFilter();
     	filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
     	context.registerReceiver(this, filter);
     	transreceive = findDevice(usbManager);
-    	listener = null;
     }
+    protected void finalize() throws Throwable {
+    	context.unregisterReceiver(this);
+    };
     @Override
 	public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -56,9 +54,6 @@ public class DriverHelper extends BroadcastReceiver implements Runnable{
         	}
         }
         
-    }
-    public void setOnDataTransreceiveListener(OnDataTransreceiveListener l){
-    	this.listener = l;
     }
 	private Boolean findDevice(UsbManager usbManager) {
         HashMap<String, UsbDevice> usbDeviceList = usbManager.getDeviceList();
@@ -147,9 +142,6 @@ public class DriverHelper extends BroadcastReceiver implements Runnable{
 			if(!sending){
 				byte[] inBuffer = new byte[bufferSize];
 				receive(inBuffer);
-				if(listener != null){
-					 listener.listen(inBuffer);
-				}
 			}
 		}
 	}

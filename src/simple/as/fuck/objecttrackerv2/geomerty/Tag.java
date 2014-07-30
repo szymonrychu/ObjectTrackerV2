@@ -7,4 +7,5 @@ public class Tag {
 	public int id;
 	public Mat homo;
 	public Mat preview;
+	public double len;
 }
