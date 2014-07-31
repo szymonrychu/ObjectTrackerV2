@@ -12,7 +12,7 @@ import static android.opengl.Matrix.*;
 
 
 
-public abstract class GLRenderer implements GLTextureView.Renderer{
+public class GLRenderer implements GLTextureView.Renderer{
 	private Context context;
 	private TextureShader texShader;
 	private ColorShader colShader;
@@ -80,17 +80,6 @@ public abstract class GLRenderer implements GLTextureView.Renderer{
 			return aPositionLocation;
 		}
 	}
-	/////////////////////////////////////////////////////////
-	/**
-	 * 
-	 */
-	public abstract void initObjects();
-	/**
-	 * 
-	 */
-	public abstract void drawObjects(TextureShader texProgram, ColorShader colProgram);
-	////////////////////////////////////////////////////////
-	
 	public GLRenderer(Context context){
 		this.context = context;
 	}
@@ -100,7 +89,7 @@ public abstract class GLRenderer implements GLTextureView.Renderer{
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		texShader = new TextureShader();
 		colShader = new ColorShader();
-		initObjects();
+		//TODO init objects
 		
 	}
 
@@ -122,7 +111,7 @@ public abstract class GLRenderer implements GLTextureView.Renderer{
 	public void onDrawFrame(GL10 gl) {
 		glClear(GL_COLOR_BUFFER_BIT);
 		multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-		drawObjects(texShader, colShader);
+		//TODO draw frame
 	}
 
 }

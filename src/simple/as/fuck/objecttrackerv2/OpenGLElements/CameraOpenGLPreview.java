@@ -182,20 +182,7 @@ public class CameraOpenGLPreview extends ViewGroup {
 		this.context = context;
 		this.cameraView = new CameraView(this);
 		this.glTextureView = new GLTextureView(context);
-		renderer = new GLRenderer(context) {
-			
-			@Override
-			public void initObjects() {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void drawObjects(TextureShader texProgram, ColorShader colProgram) {
-				// TODO Auto-generated method stub
-				
-			}
-		};
+		renderer = new GLRenderer(context);
 		this.glTextureView.setRenderer(renderer);
 		this.listener = new OnMultitouch(glTextureView);
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT );

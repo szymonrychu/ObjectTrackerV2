@@ -44,39 +44,33 @@
             android:name=".recognizer.RecognizeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_recognize"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
         </activity>
         <activity
             android:name=".calibrator.CalibrateActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_calibrate"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
         </activity>
         <activity
             android:name=".markergen.MarkerGeneratorActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_marker_generator"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
         </activity>
         <activity
             android:name="simple.as.fuck.objecttrackerv2.elements.AboutActivity"
             android:label="@string/title_activity_about"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
         </activity>
         <activity
             android:name="simple.as.fuck.objecttrackerv2.elements.LicencesActivity"
             android:label="@string/title_activity_licences"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
         </activity>
         <activity
             android:name="simple.as.fuck.objecttrackerv2.driver.DriverActivity"
-            android:label="@string/title_activity_driver"
-            android:parentActivityName=".MainActivity" >
+            android:label="@string/title_activity_driver">
             <intent-filter >
 				<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -85,15 +79,11 @@
       			android:resource="@xml/device_filter" />
         </activity>
         <activity
-            android:name="com.hoho.android.usbserial.examples.SerialConsoleActivity"
-            android:label="@string/title_activity_driver"
-            android:parentActivityName=".MainActivity" >
+            android:name="simple.as.fuck.objecttrackerv2.OpenGLElements.OpenGLActivity"
+            android:label="@string/title_activity_licences"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
         </activity>
-        <activity
-            android:name="com.hoho.android.usbserial.examples.DeviceListActivity"
-            android:label="@string/title_activity_driver"
-            android:parentActivityName=".MainActivity" >
-        </activity>
+        
     </application>
 
 </manifest>

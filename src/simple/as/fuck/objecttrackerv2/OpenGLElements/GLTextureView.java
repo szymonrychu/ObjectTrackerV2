@@ -1886,7 +1886,7 @@ public class GLTextureView extends TextureView implements SurfaceTextureListener
 
     private final WeakReference<GLTextureView> mThisWeakRef =
             new WeakReference<GLTextureView>(this);
-    private GLThread mGLThread;
+    private GLThread mGLThread;// = new GLThread(mThisWeakRef);//TODO Hack, to run it in FullScreenActivity
     private Renderer mRenderer;
     private boolean mDetached;
     private EGLConfigChooser mEGLConfigChooser;
@@ -1901,7 +1901,7 @@ public class GLTextureView extends TextureView implements SurfaceTextureListener
 	public void onSurfaceTextureAvailable(SurfaceTexture surface, int width,
 			int height) {
 		mGLThread.surfaceCreated();
-		
+
 	}
 
 	@Override
@@ -1913,7 +1913,7 @@ public class GLTextureView extends TextureView implements SurfaceTextureListener
 	@Override
 	public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int w, int h) {
 		mGLThread.onWindowResize(w, h);
-		
+
 	}
 
 	@Override

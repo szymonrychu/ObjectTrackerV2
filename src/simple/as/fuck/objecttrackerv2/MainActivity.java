@@ -1,5 +1,6 @@
 package simple.as.fuck.objecttrackerv2;
 
+import simple.as.fuck.objecttrackerv2.OpenGLElements.OpenGLActivity;
 import simple.as.fuck.objecttrackerv2.calibrator.CalibrateActivity;
 import simple.as.fuck.objecttrackerv2.driver.DriverActivity;
 import simple.as.fuck.objecttrackerv2.elements.AboutActivity;
@@ -22,6 +23,7 @@ public class MainActivity extends ActionBarActivity {
 	private Button generateButton = null;
 	private Button driverButton = null;
 	private Button exampleButton = null;
+	private Button openGlButton = null;
 	private Context context;
 	public MainActivity() {
 		this.context = this;
@@ -61,6 +63,14 @@ public class MainActivity extends ActionBarActivity {
 			public void onClick(View v) {
 				Intent generate = new Intent(context,DriverActivity.class);
 				startActivity(generate);
+			}
+		});
+		openGlButton = (Button) findViewById(R.id.butt_main_opengl_test);
+		openGlButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent opengl = new Intent(context, OpenGLActivity.class);
+				startActivity(opengl);
 			}
 		});
 		
